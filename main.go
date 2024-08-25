@@ -18,7 +18,8 @@ func main() {
 
 	// connection
 	dbConnection := component.GetDatabaseConnection(cnf)
-	cacheConnection := component.GetCacheConnection()
+	// cacheConnection := component.GetCacheConnection() // kita coba ganti dengan redis
+	cacheConnection := repository.NewRedisCache(cnf)
 
 	// repository
 	userRepository := repository.NewUser(dbConnection)

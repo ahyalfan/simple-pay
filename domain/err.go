@@ -12,3 +12,5 @@ var ErrInvalidOTP = errors.New("otp invalid")
 var ErrInsufficientBalance = errors.New("insufficient balance")
 
 var ErrInvalidTransfer = errors.New("invalid transfer")
+
+var ErrCacheMiss = errors.New("cache miss")
