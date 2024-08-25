@@ -16,14 +16,14 @@ ADD COLUMN email_verified_at TIMESTAMP(0) without time zone;
 ALTER Table users ADD COLUMN email VARCHAR(255) UNIQUE NOT NULL;
 
 CREATE TABLE public.accounts (
-    id SERIAL NOT NULL,
+    id SERIAL NOT NULL PRIMARY KEY,
     user_id integer NOT NULL,
     account_number character varying(100),
     balance numeric(19, 2)
 );
 
 CREATE TABLE public.transactions (
-    id SERIAL NOT NULL,
+    id SERIAL NOT NULL PRIMARY KEY,
     sof_number character varying(100) NOT NULL,
     dof_number character varying(100) NOT NULL,
     amount numeric(19, 2),
@@ -31,3 +31,17 @@ CREATE TABLE public.transactions (
     account_id integer NOT NULL,
     transaction_datetime timestamp(0) without time zone
 );
+
+CREATE Table public.notifications (
+    id SERIAL NOT NULL PRIMARY KEY,
+    user_id integer NOT NULL,
+    status INTEGER NOT NULL,
+    title character varying(255) NOT NULL,
+    body text NOT NULL,
+    is_read INTEGER NOT NULL,
+    created_at timestamp(0) without time zone
+);
+
+ALTER Table accounts ADD PRIMARY KEY (id);
+
+ALTER Table transactions ADD PRIMARY KEY (id);

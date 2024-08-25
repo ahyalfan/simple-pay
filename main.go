@@ -1,12 +1,14 @@
 package main
 
 import (
+	"ahyalfan/golang_e_money/dto"
 	"ahyalfan/golang_e_money/internal/api"
 	"ahyalfan/golang_e_money/internal/component"
 	"ahyalfan/golang_e_money/internal/config"
 	"ahyalfan/golang_e_money/internal/middleware"
 	"ahyalfan/golang_e_money/internal/repository"
 	"ahyalfan/golang_e_money/internal/service"
+	"ahyalfan/golang_e_money/internal/sse"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,16 +23,23 @@ func main() {
 	// cacheConnection := component.GetCacheConnection() // kita coba ganti dengan redis
 	cacheConnection := repository.NewRedisCache(cnf)
 
+	// hub
+	hub := &dto.Hub{
+		NotificationChannel: make(map[int64]chan dto.NotificationData),
+	}
+
 	// repository
 	userRepository := repository.NewUser(dbConnection)
 	accountRepository := repository.NewAccount(dbConnection)
 	transactionRepository := repository.NewTransaction(dbConnection)
+	notificationRepository := repository.NewNotification(dbConnection)
 
 	// service
 	emailService := service.NewEmail(cnf)
 	userService := service.NewUserService(userRepository, cacheConnection, emailService)
 	accountService := service.NewAccount(accountRepository)
-	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConnection, dbConnection)
+	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConnection, dbConnection, notificationRepository, hub)
+	notificationService := service.NewNotification(notificationRepository)
 
 	// middleware
 	authMiddleware := middleware.Authenticate(userService)
@@ -38,6 +47,10 @@ func main() {
 	api.NewAuth(app, userService, authMiddleware)
 	api.NewAccount(app, accountService, authMiddleware)
 	api.NewTransfer(app, transactionService, authMiddleware)
+	api.NewNotification(app, notificationService, authMiddleware)
+
+	// sse
+	sse.NewNotificationSse(app, hub, authMiddleware)
 
 	err := app.Listen(cnf.Server.Host + ":" + cnf.Server.Port)
 	if err != nil {

@@ -7,23 +7,32 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
 
 type transactionService struct {
-	accountRepository     domain.AccountRepository
-	transactionRepository domain.TransactionRepository
-	cacheRepository       domain.CacheRepository
-	db                    *gorm.DB
+	accountRepository      domain.AccountRepository
+	transactionRepository  domain.TransactionRepository
+	cacheRepository        domain.CacheRepository
+	db                     *gorm.DB
+	notificationRepository domain.NotificationRepository
+	hub                    *dto.Hub
 }
 
-func NewTransaction(accountRepository domain.AccountRepository, transactionRepository domain.TransactionRepository, cacheRepository domain.CacheRepository, db *gorm.DB) domain.TransactionService {
+func NewTransaction(accountRepository domain.AccountRepository,
+	transactionRepository domain.TransactionRepository,
+	cacheRepository domain.CacheRepository,
+	db *gorm.DB,
+	notificationRepository domain.NotificationRepository, hub *dto.Hub) domain.TransactionService {
 	return &transactionService{
-		accountRepository:     accountRepository,
-		transactionRepository: transactionRepository,
-		cacheRepository:       cacheRepository,
-		db:                    db,
+		accountRepository:      accountRepository,
+		transactionRepository:  transactionRepository,
+		cacheRepository:        cacheRepository,
+		db:                     db,
+		notificationRepository: notificationRepository,
+		hub:                    hub,
 	}
 }
 
@@ -94,6 +103,7 @@ func (t *transactionService) TransferExecute(ctx context.Context, req dto.Transf
 	}
 
 	tx.Commit()
+	go t.notificationAfterTransfer(myAccount, dofAccount, reqInquiry.Ammount)
 	return nil
 }
 
@@ -131,4 +141,48 @@ func (t *transactionService) TransferInquiry(ctx context.Context, req dto.Transf
 	_ = t.cacheRepository.Set(inquiryKey, jsonData)
 
 	return dto.TransferInQuiryRes{InquiryKey: inquiryKey}, nil
+}
+
+func (t *transactionService) notificationAfterTransfer(sofAccount domain.Account, dofAccount domain.Account, amount float64) {
+	notificationSender := domain.Notification{
+		UserID: sofAccount.UserID,
+		Title:  "Transfer Berhasil",
+		Body:   fmt.Sprintf("Transfer berhasil senilai %.2f berhasil", amount),
+		IsRead: 0,
+		Status: 1,
+	}
+
+	notificationReceiver := domain.Notification{
+		UserID: dofAccount.UserID,
+		Title:  "Dana Diterima",
+		Body:   fmt.Sprintf("Dana diterima sebesar %.2f", amount),
+		IsRead: 0,
+		Status: 1,
+	}
+
+	_ = t.notificationRepository.Insert(context.Background(), &notificationSender)
+	// artinya jika di hub notifikasi channel memiliki key user id yg dicantumkan, maka lakukan perintah ifnya
+	if channel, ok := t.hub.NotificationChannel[sofAccount.UserID]; ok {
+		channel <- dto.NotificationData{
+			// jika ada kita kirimkan datanya ke channel dengan key yg sudah ditentukan
+			ID:        notificationSender.ID,
+			Title:     notificationSender.Title,
+			Body:      notificationSender.Body,
+			IsRead:    notificationSender.IsRead,
+			Status:    notificationSender.Status,
+			CreatedAt: notificationSender.CreatedAt,
+		}
+	}
+
+	_ = t.notificationRepository.Insert(context.Background(), &notificationReceiver)
+	if channel, ok := t.hub.NotificationChannel[dofAccount.UserID]; ok {
+		channel <- dto.NotificationData{
+			ID:        notificationReceiver.ID,
+			Title:     notificationReceiver.Title,
+			Body:      notificationReceiver.Body,
+			IsRead:    notificationReceiver.IsRead,
+			Status:    notificationReceiver.Status,
+			CreatedAt: notificationReceiver.CreatedAt,
+		}
+	}
 }
