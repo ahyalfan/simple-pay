@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"ahyalfan/golang_e_money/domain"
+	"ahyalfan/golang_e_money/dto"
 	"ahyalfan/golang_e_money/internal/util"
 	"strings"
 
@@ -13,18 +14,14 @@ func Authenticate(userService domain.UserService) fiber.Handler {
 		// token di taruh di bearer token
 		token := strings.ReplaceAll(ctx.Get("Authorization"), "Bearer ", "")
 		if token == "" {
-			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"message": "Token required",
-			})
+			return ctx.Status(fiber.StatusUnauthorized).JSON(dto.CreateError(fiber.StatusUnauthorized, "Token required"))
 		}
 
 		user, err := userService.ValidateToken(ctx.Context(), token)
 		if err != nil {
-			return ctx.Status(util.GetHttpStatus(err)).JSON(fiber.Map{
-				"message": "Invalid token",
-			})
+			return ctx.Status(util.GetHttpStatus(err)).JSON(dto.CreateError(fiber.StatusUnauthorized, "Token invalid"))
 		}
-		ctx.Locals("x-user", user) // simpan di header
+		ctx.Locals("x-user", user) // simpan di memory context
 
 		return ctx.Next()
 	}

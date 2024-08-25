@@ -39,7 +39,7 @@ func (a *authApi) GenerateToken(ctx *fiber.Ctx) error {
 
 	token, err := a.userService.Authenticate(c, req)
 	if err != nil {
-		return ctx.Status(util.GetHttpStatus(err)).JSON(401, err.Error())
+		return ctx.Status(util.GetHttpStatus(err)).JSON(dto.CreateError(401, err.Error()))
 	}
 	return ctx.JSON(dto.CreateSuccess(200, "success", token))
 }
@@ -50,6 +50,9 @@ func (a *authApi) ValidateToken(ctx *fiber.Ctx) error {
 }
 
 func (a *authApi) Register(ctx *fiber.Ctx) error {
+	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	defer cancel()
+
 	var req dto.UserRegisterReg
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(dto.CreateError(400, err.Error()))
@@ -58,7 +61,7 @@ func (a *authApi) Register(ctx *fiber.Ctx) error {
 	if len(fails) > 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(dto.CreateResponseErrorData(400, "validates failed", fails))
 	}
-	res, err := a.userService.Register(ctx.Context(), req)
+	res, err := a.userService.Register(c, req)
 	if err != nil {
 		return ctx.Status(util.GetHttpStatus(err)).JSON(dto.CreateError(400, err.Error()))
 	}
@@ -66,6 +69,8 @@ func (a *authApi) Register(ctx *fiber.Ctx) error {
 }
 
 func (a *authApi) ValidateOTP(ctx *fiber.Ctx) error {
+	c, cancel := context.WithTimeout(ctx.Context(), 10*time.Second)
+	defer cancel()
 	var req dto.ValidateOtpReq
 	if err := ctx.BodyParser(&req); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(dto.CreateError(400, err.Error()))
@@ -74,7 +79,7 @@ func (a *authApi) ValidateOTP(ctx *fiber.Ctx) error {
 	if len(fails) > 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(dto.CreateResponseErrorData(400, "validates failed", fails))
 	}
-	err := a.userService.ValidateOTP(ctx.Context(), req)
+	err := a.userService.ValidateOTP(c, req)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadGateway).JSON(dto.CreateError(400, err.Error()))
 	}
