@@ -41,3 +41,8 @@ func (r *RedisCacheRepository) Get(key string) ([]byte, error) {
 func (r *RedisCacheRepository) Set(key string, entry []byte) error {
 	return r.client.Set(context.Background(), key, entry, 15*time.Minute).Err() // kita atur 15 menit saja
 }
+
+// Del implements domain.CacheRepository.
+func (r *RedisCacheRepository) Delete(key string) error {
+	return r.client.Del(context.Background(), key).Err()
+}

@@ -59,3 +59,11 @@ VALUES (
         'Transfer berhasil',
         'Transfer berhasil senilai {{ .amount }} berhasil.'
     )
+
+CREATE Table public.topup (
+    id VARCHAR(100) NOT NULL PRIMARY KEY,
+    user_id integer NOT NULL,
+    amount BIGINT NOT NULL,
+    status INTEGER NOT NULL DEFAULT (0),
+    created_at timestamp(0) without time zone
+) _

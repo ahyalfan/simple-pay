@@ -20,6 +20,9 @@ func NewNotificationSse(app *fiber.App, hub *dto.Hub, authMid fiber.Handler) {
 }
 
 func (sse *notificationSse) Listen(ctx *fiber.Ctx) error {
+	// c, cancel := context.WithCancel(ctx.Context())
+	// defer cancel()
+
 	ctx.Set("Content-Type", "text/event-stream") // syarat sse
 
 	user := ctx.Locals("x-user").(dto.UserData)

@@ -48,6 +48,7 @@ func (t *transactionService) TransferExecute(ctx context.Context, req dto.Transf
 	if err != nil {
 		return domain.ErrInquiryNotFound
 	}
+
 	var reqInquiry dto.TransferInQuiryReq
 	_ = json.Unmarshal(val, &reqInquiry)
 	if reqInquiry == (dto.TransferInQuiryReq{}) {
@@ -99,6 +100,11 @@ func (t *transactionService) TransferExecute(ctx context.Context, req dto.Transf
 
 	dofAccount.Balance += reqInquiry.Ammount
 	err = t.accountRepository.Update(ctx, &dofAccount)
+	if err != nil {
+		return err
+	}
+	// mengahapus cache di redis , karena sudah diexceute
+	err = t.cacheRepository.Delete(req.InquiryKey)
 	if err != nil {
 		return err
 	}
