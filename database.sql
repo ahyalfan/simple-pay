@@ -45,3 +45,17 @@ CREATE Table public.notifications (
 ALTER Table accounts ADD PRIMARY KEY (id);
 
 ALTER Table transactions ADD PRIMARY KEY (id);
+
+CREATE TABLE public.templates (
+    code VARCHAR(100) NOT NULL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    body text NOT NULL
+)
+
+INSERT INTO
+    public.templates (code, title, body)
+VALUES (
+        'TRANSFER',
+        'Transfer berhasil',
+        'Transfer berhasil senilai {{ .amount }} berhasil.'
+    )
