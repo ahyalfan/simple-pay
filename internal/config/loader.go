@@ -35,6 +35,10 @@ func Get() *Config {
 			Password: os.Getenv("REDIS_PASSWORD"),
 			DB:       os.Getenv("REDIS_DB"),
 		},
+		Midtrans: Midtrans{
+			Key:    os.Getenv("MIDTRANS_KEY"),
+			IsProd: os.Getenv("MIDTRANS_ENV") == "production",
+		},
 	}
 
 }

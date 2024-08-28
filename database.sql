@@ -58,6 +58,11 @@ VALUES (
         'TRANSFER',
         'Transfer berhasil',
         'Transfer berhasil senilai {{ .amount }} berhasil.'
+    ),
+    (
+        'TRANSFER_DEST',
+        'Dana diterima',
+        'Dana senilai {{ .amount }} berhasil diterima.'
     )
 
 CREATE Table public.topup (
@@ -65,5 +70,20 @@ CREATE Table public.topup (
     user_id integer NOT NULL,
     amount BIGINT NOT NULL,
     status INTEGER NOT NULL DEFAULT (0),
+    snap_url VARCHAR(255) NOT NULL,
     created_at timestamp(0) without time zone
-) _
+)
+
+INSERT INTO
+    public.templates (code, title, body)
+VALUES (
+        'TOPUP_SUCCESS',
+        'TOPUP berhasil diterima',
+        'Topup anda senilai {{ .amount }} berhasil.'
+    )
+
+CREATE Table factors (
+    id SERIAL NOT NULL PRIMARY KEY,
+    user_id integer NOT NULL,
+    pin character varying(100) NOT NULL
+)
