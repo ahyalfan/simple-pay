@@ -16,3 +16,5 @@ var ErrInvalidTransfer = errors.New("invalid transfer")
 var ErrCacheMiss = errors.New("cache miss")
 
 var ErrNoNotificationFound = errors.New("notification not found")
+var ErrInvalidPin = errors.New("invalid pin")
+var ErrPinAlreadyExists = errors.New("pin already exists")

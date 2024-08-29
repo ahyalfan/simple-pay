@@ -19,10 +19,11 @@ type userService struct {
 	repo  domain.UserRepository
 	cache domain.CacheRepository
 	mail  domain.EmailService
+	pin   domain.FactorService
 }
 
-func NewUserService(repo domain.UserRepository, cache domain.CacheRepository, mail domain.EmailService) domain.UserService {
-	return &userService{repo: repo, cache: cache, mail: mail}
+func NewUserService(repo domain.UserRepository, cache domain.CacheRepository, mail domain.EmailService, pin domain.FactorService) domain.UserService {
+	return &userService{repo: repo, cache: cache, mail: mail, pin: pin}
 }
 
 // Authenticate implements domain.UserService.
@@ -90,6 +91,13 @@ func (u *userService) Register(ctx context.Context, req dto.UserRegisterReg) (dt
 		Email:    req.Email,
 	}
 	err = u.repo.Insert(ctx, &user)
+	if err != nil {
+		return dto.UserRegisterRes{}, err
+	}
+	err = u.pin.CreatePin(ctx, dto.CreatePin{
+		UserID: user.ID,
+		Pin:    req.PIN,
+	})
 	if err != nil {
 		return dto.UserRegisterRes{}, err
 	}

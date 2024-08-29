@@ -65,6 +65,7 @@ func (a *authApi) Register(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(util.GetHttpStatus(err)).JSON(dto.CreateError(400, err.Error()))
 	}
+
 	return ctx.Status(fiber.StatusCreated).JSON(dto.CreateSuccess(fiber.StatusCreated, "success created", res))
 }
 

@@ -35,10 +35,12 @@ func main() {
 	notificationRepository := repository.NewNotification(dbConnection)
 	templateRepository := repository.NewTemplate(dbConnection)
 	topupRepository := repository.NewTopup(dbConnection)
+	factorRepository := repository.NewFactor(dbConnection)
 
 	// service
 	emailService := service.NewEmail(cnf)
-	userService := service.NewUserService(userRepository, cacheConnection, emailService)
+	factorService := service.NewFactor(factorRepository)
+	userService := service.NewUserService(userRepository, cacheConnection, emailService, factorService)
 	accountService := service.NewAccount(accountRepository)
 	notificationService := service.NewNotification(notificationRepository, templateRepository, hub)
 	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConnection, dbConnection, notificationService)
@@ -51,7 +53,7 @@ func main() {
 	api.NewAuth(app, userService, authMiddleware)
 	api.NewMidtrans(app, midtransService, topupService)
 	api.NewAccount(app, accountService, authMiddleware)
-	api.NewTransfer(app, transactionService, authMiddleware)
+	api.NewTransfer(app, transactionService, authMiddleware, factorService)
 	api.NewNotification(app, notificationService, authMiddleware)
 	api.NewTopup(app, authMiddleware, topupService)
 

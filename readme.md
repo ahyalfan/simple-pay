@@ -6,3 +6,6 @@ package tambahannya bigcache dan go/x/crypto/bcrypt
 3. menganti bigcache dengan redis
 4. bikin sebuah notifikasi secara realtime
 <!-- menggunkan sse -->
+5. integration top up dengan midtrans
+<!-- package tambahan go-midtrans -->
+6. implemntasi mobile pin

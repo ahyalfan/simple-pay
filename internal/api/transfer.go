@@ -12,10 +12,11 @@ import (
 
 type transferApi struct {
 	transactionService domain.TransactionService
+	factorService      domain.FactorService
 }
 
-func NewTransfer(app *fiber.App, transaction domain.TransactionService, authMid fiber.Handler) {
-	handler := transferApi{transactionService: transaction}
+func NewTransfer(app *fiber.App, transaction domain.TransactionService, authMid fiber.Handler, factorService domain.FactorService) {
+	handler := transferApi{transactionService: transaction, factorService: factorService}
 	api := app.Group("/api", authMid)
 
 	api.Post("/transfer/inquiry", handler.transferInquiry)
@@ -58,7 +59,19 @@ func (ta *transferApi) transferExecute(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(dto.CreateResponseErrorData(fiber.StatusBadRequest, "validates failed", fails))
 	}
 
-	err := ta.transactionService.TransferExecute(c, req)
+	user := ctx.Locals("x-user").(dto.UserData)
+
+	validatePin := dto.ValidatePinReq{
+		Pin:    req.PIN,
+		UserId: user.ID,
+	}
+
+	err := ta.factorService.Verify(c, validatePin)
+	if err != nil {
+		return ctx.Status(fiber.StatusPreconditionFailed).JSON(dto.CreateError(fiber.StatusPreconditionFailed, err.Error()))
+	}
+
+	err = ta.transactionService.TransferExecute(c, req)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadGateway).JSON(dto.CreateError(fiber.StatusBadGateway, err.Error()))
 	}
