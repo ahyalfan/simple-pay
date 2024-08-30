@@ -12,10 +12,11 @@ import (
 
 type authApi struct {
 	userService domain.UserService
+	fdsService  domain.FdsService
 }
 
-func NewAuth(app *fiber.App, userService domain.UserService, authMid fiber.Handler) {
-	handler := authApi{userService: userService}
+func NewAuth(app *fiber.App, userService domain.UserService, authMid fiber.Handler, fdsService domain.FdsService) {
+	handler := authApi{userService: userService, fdsService: fdsService}
 
 	app.Post("/api/auth", handler.GenerateToken)
 	app.Get("/api/auth/validate", authMid, handler.ValidateToken)
@@ -40,6 +41,13 @@ func (a *authApi) GenerateToken(ctx *fiber.Ctx) error {
 	token, err := a.userService.Authenticate(c, req)
 	if err != nil {
 		return ctx.Status(util.GetHttpStatus(err)).JSON(dto.CreateError(401, err.Error()))
+	}
+
+	// kita bisa ambil ip addressnya
+	// karena ini host nya masih local host kita belum bisa implementasikan yg real
+	// disini kita coba pakai permisalan ip di Header
+	if !a.fdsService.IsAuthorized(c, ctx.Get("X-FORWARDED-FOR"), token.UserID) {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(dto.CreateError(401, "unauthorized"))
 	}
 	return ctx.JSON(dto.CreateSuccess(200, "success", token))
 }

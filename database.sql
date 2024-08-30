@@ -87,3 +87,14 @@ CREATE Table factors (
     user_id integer NOT NULL,
     pin character varying(100) NOT NULL
 )
+
+CREATE Table login_logs (
+    id SERIAL NOT NULL PRIMARY KEY,
+    user_id integer NOT NULL,
+    is_authorized boolean NOT NULL,
+    ip_address character varying(255) NOT NULL,
+    time_zone VARCHAR NOT NULL,
+    latitude NUMERIC NOT NULL,
+    longitude NUMERIC NOT NULL,
+    access_time timestamp(0) without time zone
+);

@@ -36,6 +36,7 @@ func main() {
 	templateRepository := repository.NewTemplate(dbConnection)
 	topupRepository := repository.NewTopup(dbConnection)
 	factorRepository := repository.NewFactor(dbConnection)
+	loginLog := repository.NewLoginLog(dbConnection)
 
 	// service
 	emailService := service.NewEmail(cnf)
@@ -46,11 +47,13 @@ func main() {
 	transactionService := service.NewTransaction(accountRepository, transactionRepository, cacheConnection, dbConnection, notificationService)
 	midtransService := service.NewMidtrans(cnf)
 	topupService := service.NewTopupService(notificationService, topupRepository, midtransService, accountRepository, transactionRepository)
+	ipCheckerService := service.NewIpChecker()
+	fdsService := service.NewFds(ipCheckerService, loginLog)
 
 	// middleware
 	authMiddleware := middleware.Authenticate(userService)
 
-	api.NewAuth(app, userService, authMiddleware)
+	api.NewAuth(app, userService, authMiddleware, fdsService)
 	api.NewMidtrans(app, midtransService, topupService)
 	api.NewAccount(app, accountService, authMiddleware)
 	api.NewTransfer(app, transactionService, authMiddleware, factorService)
@@ -60,6 +63,7 @@ func main() {
 	// sse
 	sse.NewNotificationSse(app, hub, authMiddleware)
 
+	api.NewNotFound(app)
 	err := app.Listen(cnf.Server.Host + ":" + cnf.Server.Port)
 	if err != nil {
 		log.Fatal(err.Error())
