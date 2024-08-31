@@ -1,0 +1,7 @@
+cluster.name: ahmad-yogi-alfandi
+node.name: ahyalfan-1
+xpack.security-enabled: false
+http.port: 9200
+# transport.tcp.port: 9300
+path.data: data
+path.logs: logs

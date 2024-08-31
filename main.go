@@ -23,6 +23,9 @@ func main() {
 	// cacheConnection := component.GetCacheConnection() // kita coba ganti dengan redis
 	cacheConnection := repository.NewRedisCache(cnf)
 
+	// logrus logger
+	component.Log.Info("Starting app server")
+
 	// hub
 	hub := &dto.Hub{
 		NotificationChannel: make(map[int64]chan dto.NotificationData),

@@ -3,6 +3,7 @@ package service
 import (
 	"ahyalfan/golang_e_money/domain"
 	"ahyalfan/golang_e_money/dto"
+	"ahyalfan/golang_e_money/internal/component"
 	"ahyalfan/golang_e_money/internal/util"
 	"context"
 	"encoding/json"
@@ -40,6 +41,7 @@ func NewTransaction(accountRepository domain.AccountRepository,
 // TransferExecute implements domain.TransactionService.
 func (t *transactionService) TransferExecute(ctx context.Context, req dto.TransferExecuteReq) error {
 	tx := t.db.Begin() // agar jika terjadi error maka akan di rollback semua
+	component.Log.Info("starting execute transfer transaction")
 	defer tx.Rollback()
 	// atau sebenarnya kita bisa bikin coloumn baru credit ulang, yg mana ini bisa di refound ketika ada massalah pengirimanya
 	// yang nanti akan ke record sehingga kita bisa memantaunya
@@ -64,6 +66,8 @@ func (t *transactionService) TransferExecute(ctx context.Context, req dto.Transf
 	if err != nil {
 		return err
 	}
+
+	component.Log.Debugf("%s to %s", myAccount.AccountNumber, dofAccount.AccountNumber)
 
 	debitTransaction := domain.Transaction{
 		AccountId:       myAccount.ID,
