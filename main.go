@@ -42,7 +42,8 @@ func main() {
 	loginLog := repository.NewLoginLog(dbConnection)
 
 	// service
-	emailService := service.NewEmail(cnf)
+	queueService := service.NewQueueService(cnf)
+	emailService := service.NewEmail(cnf, queueService)
 	factorService := service.NewFactor(factorRepository)
 	userService := service.NewUserService(userRepository, cacheConnection, emailService, factorService)
 	accountService := service.NewAccount(accountRepository)

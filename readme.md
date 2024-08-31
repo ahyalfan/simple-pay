@@ -23,3 +23,7 @@ package tambahannya bigcache dan go/x/crypto/bcrypt
     <!-- go get github.com/sirupsen/logrus go.elastic.co/ecslogrus -->
 
 <!-- masuk ke kibana :5601 -->
+
+9. implematasi queue redis dari server lain yg sudah kita buat
+   <!-- alasan kita pakai queue, kakrena reaourcenya terbatas, dan kirim emal ini lamabat, jadi kita buat antrian aja  -->
+   <!-- install dulu github.com/hibiken/asynq -->

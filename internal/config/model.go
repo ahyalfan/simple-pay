@@ -6,6 +6,7 @@ type Config struct {
 	Mail      Email
 	Redis     Redis
 	Midtrans  Midtrans
+	Queue     Redis
 }
 
 type Server struct {

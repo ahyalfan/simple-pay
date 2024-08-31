@@ -39,6 +39,11 @@ func Get() *Config {
 			Key:    os.Getenv("MIDTRANS_KEY"),
 			IsProd: os.Getenv("MIDTRANS_ENV") == "production",
 		},
+		Queue: Redis{
+			Addr:     os.Getenv("QUEUE_REDIS_ADDR"),
+			Password: os.Getenv("QUEUE_REDIS_PASSWORD"),
+			DB:       os.Getenv("QUEUE_REDIS_DB"),
+		},
 	}
 
 }
